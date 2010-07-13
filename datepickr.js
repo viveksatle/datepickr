@@ -1,3 +1,8 @@
+/*
+    datepickr - pick your date not your nose
+    Copyright (c) 2010
+*/
+
 function datepickr(id, userConfig) {
 	
 	var config = {
@@ -43,7 +48,7 @@ function datepickr(id, userConfig) {
 	months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
 	daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
 	suffix = { 1: 'st', 2: 'nd', 3: 'rd', 21: 'st', 22: 'nd', 23: 'rd', 31: 'st' },
-	element, calendarContainer, calendarBody, calendarMonth, prevMonth, nextMonth,
+	element, container, body, month, prevMonth, nextMonth,
 	currentYearView = get.current.year(),
 	currentMonthView = get.current.month.integer(),
 	i, x, buildCache = [];
@@ -147,13 +152,13 @@ function datepickr(id, userConfig) {
 			currentMonthView = 0;
 		}
 		
-		calendarMonth.innerHTML = get.month.string(config.fullCurrentMonth) + ' ' + currentYearView;
+		month.innerHTML = get.month.string(config.fullCurrentMonth) + ' ' + currentYearView;
 		
 		// rebuild the calendar
-		while(calendarBody.hasChildNodes()){
-			calendarBody.removeChild(calendarBody.lastChild);
+		while(body.hasChildNodes()){
+			body.removeChild(body.lastChild);
 		}
-		calendarBody.appendChild(buildCalendar());
+		body.appendChild(buildCalendar());
 		bindDayLinks();
 		
 		return false;
@@ -173,7 +178,7 @@ function datepickr(id, userConfig) {
 	
 	// our link binding function
 	function bindDayLinks() {
-		var days = calendarBody.getElementsByTagName('a');
+		var days = body.getElementsByTagName('a');
 		
 		for(i = 0, x = days.length; i < x; i++) {
 			days[i].onclick = function() {
@@ -236,10 +241,11 @@ function datepickr(id, userConfig) {
 	function open() {
 		document.onclick = function(e) {
 			e = e || window.event;
+			var target = e.target || e.srcElement;
 			
-			var parentNode = e.target.parentNode;
-			if(e.target != element && parentNode != calendarContainer) {
-				while(parentNode != calendarContainer) {
+			var parentNode = target.parentNode;
+			if(target != element && parentNode != container) {
+				while(parentNode != container) {
 					parentNode = parentNode.parentNode;
 					if(parentNode == null) {
 						close();
@@ -250,12 +256,12 @@ function datepickr(id, userConfig) {
 		}
 		
 		bindDayLinks();
-		calendarContainer.style.display = 'block';
+		container.style.display = 'block';
 	}
 	
 	function close() {
-		document.onclick = undefined;
-		calendarContainer.style.display = 'none';
+		document.onclick = null;
+		container.style.display = 'none';
 	}
 	
 	function initialise(userConfig) {
@@ -267,27 +273,36 @@ function datepickr(id, userConfig) {
 			}
 		}
 		
-		calendarContainer = build('div', { className: 'calendar' });
-		calendarContainer.style.cssText = 'display: none; position: absolute; top: ' + (element.offsetTop + element.offsetHeight) + 'px; left: ' + element.offsetLeft + 'px;';
+		var inputLeft = inputTop = 0,
+		obj = element;
+		if(obj.offsetParent) {
+			do {
+				inputLeft += obj.offsetLeft;
+				inputTop += obj.offsetTop;
+			} while (obj = obj.offsetParent);
+		}
+		
+		container = build('div', { className: 'calendar' });
+		container.style.cssText = 'display: none; position: absolute; top: ' + (inputTop + element.offsetHeight) + 'px; left: ' + inputLeft + 'px; z-index: 9999;';
 		
 		var months = build('div', { className: 'months' });
 		prevMonth = build('span', { className: 'prev-month' }, build('a', { href: '#' }, '&lt;'));
 		nextMonth = build('span', { className: 'next-month' }, build('a', { href: '#' }, '&gt;'));
-		calendarMonth = build('span', { className: 'current-month' }, get.month.string(config.fullCurrentMonth) + ' ' + currentYearView);
+		month = build('span', { className: 'current-month' }, get.month.string(config.fullCurrentMonth) + ' ' + currentYearView);
 		
 		months.appendChild(prevMonth);
 		months.appendChild(nextMonth);
-		months.appendChild(calendarMonth);
+		months.appendChild(month);
 		
 		var calendar = build('table', {}, build('thead', {}, build('tr', { className: 'weekdays' }, buildWeekdays())));
-		calendarBody = build('tbody', {}, buildCalendar());
+		body = build('tbody', {}, buildCalendar());
 		
-		calendar.appendChild(calendarBody);
+		calendar.appendChild(body);
 		
-		calendarContainer.appendChild(months);
-		calendarContainer.appendChild(calendar);
+		container.appendChild(months);
+		container.appendChild(calendar);
 		
-		document.body.appendChild(calendarContainer);
+		document.body.appendChild(container);
 		bindMonthLinks();
 		
 		element.onfocus = open;
