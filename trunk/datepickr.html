@@ -1,13 +1,9 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
-
 	<head>
-	
 		<title>Testing datepickr</title>
 		
-		<script type="text/javascript" src="datepickr.js"></script>
-		
 		<style type="text/css">
-			
 			.calendar {
 				font-family: 'Trebuchet MS', Tahoma, Verdana, Arial, sans-serif;
 				font-size: 0.9em;
@@ -19,10 +15,6 @@
 				border-radius: 4px;
 				padding: 0.2em;
 				width: 14em;
-			}
-			
-			.calendar a {
-				outline: none;
 			}
 			
 			.calendar .months {
@@ -53,16 +45,19 @@
 				margin: 0 auto;
 			}
 			
-			.calendar .months a {
+			.calendar .months .prev-month,
+			.calendar .months .next-month {
 				color: #FFF;
 				text-decoration: none;
 				padding: 0 0.4em;
 				-moz-border-radius: 4px;
 				-webkit-border-radius: 4px;
 				border-radius: 4px;
+				cursor: pointer;
 			}
 			
-			.calendar .months a:hover {
+			.calendar .months .prev-month:hover,
+			.calendar .months .next-month:hover {
 				background-color: #FDF5CE;
 				color: #C77405;
 			}
@@ -84,39 +79,56 @@
 				width: 14.3%;
 			}
 			
-			.calendar td a {
+			.calendar td span {
 				display: block;
 				color: #1C94C4;
 				background-color: #F6F6F6;
 				border: 1px solid #CCC;
 				text-decoration: none;
 				padding: 0.2em;
+				cursor: pointer;
 			}
 			
-			.calendar td a:hover {
+			.calendar td span:hover {
 				color: #C77405;
 				background-color: #FDF5CE;
 				border: 1px solid #FBCB09;
 			}
 			
-			.calendar td.today a {
+			.calendar td.today span {
 				background-color: #FFF0A5;
 				border: 1px solid #FED22F;
 				color: #363636;
 			}
-			
 		</style>
-	
 	</head>
 
 	<body>
-	
-		<input id="datepick" class="date-pick" />
+		<h3>Regular date picker:</h3>
+		<input id="datepick" size="50" />
 		
+		<hr />
+		
+		<h3>Another date picker:</h3>
+		<input id="datepick2" size="50" />
+		
+		<hr />
+		
+		<h3 id="blah">A third date picker because why not:</h3>
+		<input id="datepick3" size="50" />
+		
+		<script type="text/javascript" src="datepickr.js"></script>
 		<script type="text/javascript">
-			new datepickr('datepick', { dateFormat: 'm-d-Y' });
+			new datepickr('datepick');
+			
+			new datepickr('datepick2', {
+				'dateFormat': 'm/d/y'
+			});
+			
+			new datepickr('datepick3', {
+				'fullCurrentMonth': false,
+				'dateFormat': 'l, F j'
+			});
 		</script>
-	
 	</body>
-
 </html>
