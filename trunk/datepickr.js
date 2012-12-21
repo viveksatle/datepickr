@@ -15,9 +15,9 @@ var datepickr = (function() {
 				integer: function() {
 					return currentDate.getMonth();
 				},
-				string: function(full) {
+				string: function(full, months) {
 					var date = currentDate.getMonth();
-					return monthToStr(date, full);
+					return monthToStr(date, full, months);
 				}
 			},
 			day: function() {
@@ -25,20 +25,22 @@ var datepickr = (function() {
 			}
 		},
 		month: {
-			string: function(full, currentMonthView) {
+			string: function(full, currentMonthView, months) {
 				var date = currentMonthView;
-				return monthToStr(date, full);
+				return monthToStr(date, full, months);
 			},
 			numDays: function(currentMonthView, currentYearView) {
-				// checks to see if february is a leap year otherwise return the respective # of days
+				/* checks to see if february is a leap year otherwise return the respective # of days */
 				return (currentMonthView == 1 && !(currentYearView & 3) && (currentYearView % 1e2 || !(currentYearView % 4e2))) ? 29 : daysInMonth[currentMonthView];
 			}
 		}
 	},
-	weekdays = ['Sun', 'Mon', 'Tues', 'Wednes', 'Thurs', 'Fri', 'Satur'],
-	months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+	/*weekdays,
+	weekdayLength = 2,
+	months,*/
 	daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-	suffix = { 1: 'st', 2: 'nd', 3: 'rd', 21: 'st', 22: 'nd', 23: 'rd', 31: 'st' },
+	/*suffix,
+	dateFormat,*/
 	buildCache = [],
 	handlers = {
 		calendarClick: function(e) {
@@ -63,7 +65,7 @@ var datepickr = (function() {
 						rebuildCalendar.call(this);
 					break;
 					case 'day':
-						this.element.value = formatDate(new Date(this.currentYearView, this.currentMonthView, e.target.innerHTML).getTime(), this.config.dateFormat);
+						this.element.value = formatDate(new Date(this.currentYearView, this.currentMonthView, e.target.innerHTML).getTime(), this.config);
 						this.close();
 					break;
 				}
@@ -85,7 +87,7 @@ var datepickr = (function() {
 		}
 	};
 	
-	function formatDate(milliseconds, dateFormat) {
+	function formatDate(milliseconds, config) {
 		var formattedDate = '',
 		dateObj = new Date(milliseconds),
 		format = {
@@ -94,29 +96,29 @@ var datepickr = (function() {
 				return (day < 10) ? '0' + day : day;
 			},
 			D: function() {
-				return weekdays[format.w()].substring(0, 3);
+				return config.weekdays[format.w()].substring(0, 3);
 			},
 			j: function() {
 				return dateObj.getDate();
 			},
 			l: function() {
-				return weekdays[format.w()] + 'day';
+				return config.weekdays[format.w()];
 			},
 			S: function() {
-				return suffix[format.j()] || 'th';
+				return config.suffix[format.j()] || config.defaultSuffix;
 			},
 			w: function() {
 				return dateObj.getDay();
 			},
 			F: function() {
-				return monthToStr(format.n(), true);
+				return monthToStr(format.n(), true, config.months);
 			},
 			m: function() {
 				var month = format.n() + 1;
 				return (month < 10) ? '0' + month : month;
 			},
 			M: function() {
-				return monthToStr(format.n(), false);
+				return monthToStr(format.n(), false, config.months);
 			},
 			n: function() {
 				return dateObj.getMonth();
@@ -128,10 +130,16 @@ var datepickr = (function() {
 				return format.Y().toString().substring(2, 4);
 			}
 		},
-		formatPieces = dateFormat.split('');
+		formatPieces = config.dateFormat.split('');
 		
-		foreach(formatPieces, function(formatPiece) {
-			formattedDate += format[formatPiece] ? format[formatPiece]() : formatPiece;
+		foreach(formatPieces, function(formatPiece, index) {
+			if(format[formatPiece] && formatPieces[index - 1] != '\\') {
+				formattedDate += format[formatPiece]();
+			} else {
+				if(formatPiece != '\\') {
+					formattedDate += formatPiece;
+				}
+			}
 		});
 		
 		return formattedDate;
@@ -199,7 +207,7 @@ var datepickr = (function() {
 		return element;
 	}
 	
-	function monthToStr(date, full) {
+	function monthToStr(date, full, months) {
 		return ((full == true) ? months[date] : ((months[date].length > 3) ? months[date].substring(0, 3) : months[date]));
 	}
 	
@@ -207,7 +215,7 @@ var datepickr = (function() {
 		return day == date.current.day() && currentMonthView == date.current.month.integer() && currentYearView == date.current.year();
 	}
 	
-	function buildWeekdays() {
+	function buildWeekdays(weekdays) {
 		var weekdayHtml = document.createDocumentFragment();
 		foreach(weekdays, function(weekday) {
 			weekdayHtml.appendChild(buildNode('th', {}, weekday.substring(0, 2)));
@@ -223,12 +231,12 @@ var datepickr = (function() {
 		var firstOfMonth = new Date(this.currentYearView, this.currentMonthView, 1).getDay(),
 		numDays = date.month.numDays(this.currentMonthView, this.currentYearView);
 		
-		this.currentMonth.innerHTML = date.month.string(this.config.fullCurrentMonth, this.currentMonthView) + ' ' + this.currentYearView;
+		this.currentMonth.innerHTML = date.month.string(this.config.fullCurrentMonth, this.currentMonthView, this.config.months) + ' ' + this.currentYearView;
 		this.calendarBody.appendChild(buildDays(firstOfMonth, numDays, this.currentMonthView, this.currentYearView));
 	}
 	
-	function buildCurrentMonth(config, currentMonthView, currentYearView) {
-		return buildNode('span', { className: 'current-month' }, date.month.string(config.fullCurrentMonth, currentMonthView) + ' ' + currentYearView);
+	function buildCurrentMonth(config, currentMonthView, currentYearView, months) {
+		return buildNode('span', { className: 'current-month' }, date.month.string(config.fullCurrentMonth, currentMonthView, months) + ' ' + currentYearView);
 	}
 	
 	function buildMonths(config, currentMonthView, currentYearView) {
@@ -247,14 +255,14 @@ var datepickr = (function() {
 		row = buildNode('tr'),
 		dayCount = 0, i;
 		
-		// print out previous month's "days"
+		/* print out previous month's "days" */
 		for(i = 1; i <= firstOfMonth; i++) {
 			row.appendChild(buildNode('td', null, '&nbsp;'));
 			dayCount++;
 		}
 		
 		for(i = 1; i <= numDays; i++) {
-			// if we have reached the end of a week, wrap to the next line
+			/* if we have reached the end of a week, wrap to the next line */
 			if(dayCount == 7) {
 				calendarBody.appendChild(row);
 				row = buildNode('tr');
@@ -267,7 +275,7 @@ var datepickr = (function() {
 			dayCount++;
 		}
 		
-		// if we haven't finished at the end of the week, start writing out the "days" for the next month
+		/* if we haven't finished at the end of the week, start writing out the "days" for the next month */
 		for(i = 1; i <= (7 - dayCount); i++) {
 			row.appendChild(buildNode('td', null, '&nbsp;'));
 		}
@@ -295,11 +303,11 @@ var datepickr = (function() {
 		var calendarContainer = buildNode('div', { className: 'calendar' });
 		calendarContainer.style.cssText = 'display: none; position: absolute; top: ' + (inputTop + this.element.offsetHeight) + 'px; left: ' + inputLeft + 'px; z-index: 100;';
 		
-		this.currentMonth = buildCurrentMonth(this.config, this.currentMonthView, this.currentYearView)
+		this.currentMonth = buildCurrentMonth(this.config, this.currentMonthView, this.currentYearView, this.config.months)
 		var months = buildMonths(this.config, this.currentMonthView, this.currentYearView);
 		months.appendChild(this.currentMonth);
 		
-		var calendar = buildNode('table', null, buildNode('thead', null, buildNode('tr', { className: 'weekdays' }, buildWeekdays())));
+		var calendar = buildNode('table', null, buildNode('thead', null, buildNode('tr', { className: 'weekdays' }, buildWeekdays(this.config.weekdays))));
 		this.calendarBody = buildNode('tbody');
 		this.calendarBody.appendChild(buildDays(firstOfMonth, numDays, this.currentMonthView, this.currentYearView));
 		calendar.appendChild(this.calendarBody);
@@ -320,7 +328,11 @@ var datepickr = (function() {
 		this.element = document.getElementById(elementId);
 		this.config = {
 			fullCurrentMonth: true,
-			dateFormat: 'F jS, Y'
+			dateFormat: 'F jS, Y',
+			weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+			months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+			suffix: { 1: 'st', 2: 'nd', 3: 'rd', 21: 'st', 22: 'nd', 23: 'rd', 31: 'st' },
+			defaultSuffix: 'th'
 		};
 		this.currentYearView = date.current.year();
 		this.currentMonthView = date.current.month.integer();
@@ -332,6 +344,12 @@ var datepickr = (function() {
 				}
 			}
 		}
+		
+		/*weekdays = this.config.weekdays;
+		dateFormat = this.config.dateFormat;
+		months = this.config.months;
+		suffix = this.config.suffix;
+		defaultSuffix = this.config.defaultSuffix;*/
 		
 		this.documentClick = function(e) { handlers.documentClick.call(self, e); }
 		
