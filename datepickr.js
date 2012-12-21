@@ -35,12 +35,7 @@ var datepickr = (function() {
 			}
 		}
 	},
-	/*weekdays,
-	weekdayLength = 2,
-	months,*/
 	daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-	/*suffix,
-	dateFormat,*/
 	buildCache = [],
 	handlers = {
 		calendarClick: function(e) {
@@ -344,12 +339,6 @@ var datepickr = (function() {
 				}
 			}
 		}
-		
-		/*weekdays = this.config.weekdays;
-		dateFormat = this.config.dateFormat;
-		months = this.config.months;
-		suffix = this.config.suffix;
-		defaultSuffix = this.config.defaultSuffix;*/
 		
 		this.documentClick = function(e) { handlers.documentClick.call(self, e); }
 		
