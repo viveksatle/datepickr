@@ -53,3 +53,23 @@ new datepickr('inputElementId', {
 || *n* || Numeric representation of a month, without leading zeros || *0* through *11* ||
 || *Y* || A full numeric representation of a year, 4 digits || *1999* or *2003* ||
 || *y* || A two digit representation of a year || *99* or *03* ||
+
+==Escaping date format characters==
+
+To escape a character (if you need to use one of the reserved format characters above) use a double backslash: \\
+
+Example:
+
+{{{
+dateFormat: '\\Da\\y picke\\d: Y/m/d'
+}}}
+
+To get something like:
+
+Day picked: 2013/02/12
+
+If you do not escape the characters you would end up with something like this instead:
+
+Tuea13 picke12: 2013/02/12
+
+Which is probably not what you want...
