@@ -66,10 +66,10 @@ dateFormat: '\\Da\\y picke\\d: Y/m/d'
 
 To get something like:
 
-Day picked: 2013/02/12
+*Day picked: 2013/02/12*
 
 If you do not escape the characters you would end up with something like this instead:
 
-Tuea13 picke12: 2013/02/12
+*Tuea13 picke12: 2013/02/12*
 
 Which is probably not what you want...
